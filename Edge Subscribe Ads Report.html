@@ -1,0 +1,239 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Edge Subscribe Ads Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky date bar on top, KPI band, trend chart beside funnel, then ad and daily tables. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#15202e; --muted:#5d6b7c; --line:#dde3ea;
+  --accent:#2452c9; --accent-soft:#e3eafb; --second:#b86a12; --good:#1f7a55;
+  --display:"Bricolage Grotesque","Figtree",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#18212c; --ink:#e8edf3; --muted:#95a3b4; --line:#2a3644;
+  --accent:#7ea2ff; --accent-soft:#22304d; --second:#e2a154; --good:#5fc79b; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#18212c; --ink:#e8edf3; --muted:#95a3b4; --line:#2a3644;
+  --accent:#7ea2ff; --accent-soft:#22304d; --second:#e2a154; --good:#5fc79b; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+header.top{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-size:clamp(24px,4vw,34px);line-height:1.1;margin:4px 0 0;text-wrap:balance;font-weight:700}
+.sub{color:var(--muted);font-size:14px;margin-top:6px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+.dates{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.dates label{font-size:12px;color:var(--muted);font-weight:600;display:flex;flex-direction:column;gap:3px}
+input[type=date],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+button.p{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+button.p:hover{border-color:var(--accent)}
+button.p[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.kpi{background:var(--surface);padding:14px 16px;min-width:0}
+.kpi .l{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.kpi .v{font-family:var(--display);font-size:clamp(22px,3vw,30px);font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px;line-height:1.1}
+.kpi .n{font-size:12.5px;color:var(--muted);margin-top:4px}
+.kpi.lead .v{color:var(--accent)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:20px}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.ph{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-bottom:12px}
+h2{font-family:var(--display);font-size:18px;margin:0;font-weight:700}
+.chartbox{position:relative;height:290px}
+.fr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line)}
+.fr:first-of-type{border-top:0}
+.fr .nm{font-weight:500}.fr .ct{font-variant-numeric:tabular-nums;font-weight:600}
+.fr .tr{grid-column:1/-1;height:8px;background:var(--accent-soft);border-radius:4px;overflow:hidden}
+.fr .tr i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.fr .rt{grid-column:1/-1;font-size:12.5px;color:var(--muted)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:9px 10px;text-align:right;white-space:nowrap;border-top:1px solid var(--line)}
+th{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;border-top:0}
+th:first-child,td:first-child{text-align:left}
+td.name{font-weight:600;white-space:normal;min-width:190px}
+.share{height:5px;background:var(--accent-soft);border-radius:3px;margin-top:5px;max-width:160px}
+.share i{display:block;height:100%;background:var(--second);border-radius:3px}
+tfoot td{font-weight:600;border-top:2px solid var(--line)}
+.empty{color:var(--muted);padding:24px 0;text-align:center}
+.foot{font-size:12.5px;color:var(--muted);max-width:75ch}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Meta Ads performance report</div>
+      <h1 id="camp"></h1>
+      <div class="sub" id="rangeText"></div>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="dates">
+      <label for="from">From<input type="date" id="from"></label>
+      <label for="to">To<input type="date" id="to"></label>
+    </div>
+    <div class="presets" id="presets">
+      <button class="p" data-p="all">Full period</button>
+      <button class="p" data-p="launch">Since launch</button>
+      <button class="p" data-p="7">Last 7 days</button>
+      <button class="p" data-p="3">Last 3 days</button>
+      <button class="p" data-p="1">Latest day</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid2">
+    <section class="panel">
+      <div class="ph">
+        <h2>Daily trend</h2>
+        <select id="metric" aria-label="Metric to chart">
+          <option value="spend">Amount spent</option>
+          <option value="reg">Registrations</option>
+          <option value="cpr">Cost per registration</option>
+          <option value="impr">Impressions</option>
+          <option value="lc">Link clicks</option>
+          <option value="ctr">Link CTR</option>
+          <option value="cpc">Cost per link click</option>
+          <option value="lpv">Landing page views</option>
+          <option value="co">Checkouts initiated</option>
+        </select>
+      </div>
+      <div class="chartbox"><canvas id="chart"></canvas></div>
+    </section>
+    <section class="panel">
+      <div class="ph"><h2>Path to conversion</h2></div>
+      <div id="funnel"></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="ph"><h2>Ad performance</h2></div>
+    <div class="scroll"><table id="ads"></table></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><h2>Day by day</h2></div>
+    <div class="scroll"><table id="days"></table></div>
+  </section>
+
+  <p class="foot">Source: Meta Ads Manager export, 23 Sep to 6 Oct 2026, in USD. Attribution: 7-day click, 1-day view or 1-day engaged view. Ads started delivering on 30 Sep. Ad-level figures can differ from campaign totals by a few cents because Meta rounds each row.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const DATA = {"name":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","campaign":[{"d":"2026-09-23","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-24","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-25","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-26","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-27","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-28","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-29","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-30","spend":305.25,"impr":3628.0,"lc":67.0,"ca":116.0,"lpv":53.0,"reg":5.0,"pur":1.0,"val":150.0,"co":8.0},{"d":"2026-10-01","spend":263.46,"impr":2318.0,"lc":46.0,"ca":68.0,"lpv":38.0,"reg":1.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-02","spend":207.01,"impr":1773.0,"lc":34.0,"ca":47.0,"lpv":31.0,"reg":1.0,"pur":1.0,"val":150.0,"co":3.0},{"d":"2026-10-03","spend":176.97,"impr":1288.0,"lc":30.0,"ca":59.0,"lpv":26.0,"reg":2.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-04","spend":63.91,"impr":488.0,"lc":10.0,"ca":16.0,"lpv":7.0,"reg":1.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-05","spend":103.01,"impr":872.0,"lc":17.0,"ca":34.0,"lpv":14.0,"reg":1.0,"pur":0.0,"val":0.0,"co":18.0},{"d":"2026-10-06","spend":160.98,"impr":1085.0,"lc":22.0,"ca":42.0,"lpv":15.0,"reg":0.0,"pur":0.0,"val":0.0,"co":22.0}],"ads":[{"d":"2026-09-23","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-23","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-23","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-24","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-24","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-24","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-25","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-25","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-25","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-26","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-26","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-26","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-27","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-27","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-27","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-28","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-28","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-28","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-29","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-29","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-29","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-30","n":"CAR 01 + EDGE CUSTOMERS","spend":101.32,"impr":2194.0,"lc":27.0,"ca":37.0,"lpv":20.0,"reg":0.0,"pur":1.0,"val":150.0,"co":2.0},{"d":"2026-09-30","n":"VID 01 + HOW EDGE WORKS","spend":171.13,"impr":1216.0,"lc":32.0,"ca":68.0,"lpv":26.0,"reg":4.0,"pur":0.0,"val":0.0,"co":6.0},{"d":"2026-09-30","n":"CAR 02 + TOP DEALS + EXPLORE","spend":32.8,"impr":218.0,"lc":8.0,"ca":11.0,"lpv":7.0,"reg":1.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-01","n":"CAR 01 + EDGE CUSTOMERS","spend":13.91,"impr":106.0,"lc":1.0,"ca":1.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-01","n":"CAR 02 + TOP DEALS + EXPLORE","spend":74.16,"impr":1129.0,"lc":25.0,"ca":28.0,"lpv":22.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-01","n":"VID 01 + HOW EDGE WORKS","spend":175.39,"impr":1083.0,"lc":20.0,"ca":39.0,"lpv":16.0,"reg":1.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-02","n":"CAR 01 + EDGE CUSTOMERS","spend":11.82,"impr":76.0,"lc":1.0,"ca":2.0,"lpv":1.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-02","n":"CAR 02 + TOP DEALS + EXPLORE","spend":72.82,"impr":933.0,"lc":17.0,"ca":21.0,"lpv":16.0,"reg":0.0,"pur":1.0,"val":150.0,"co":0.0},{"d":"2026-10-02","n":"VID 01 + HOW EDGE WORKS","spend":122.37,"impr":764.0,"lc":16.0,"ca":24.0,"lpv":14.0,"reg":1.0,"pur":0.0,"val":0.0,"co":3.0},{"d":"2026-10-03","n":"VID 01 + HOW EDGE WORKS","spend":120.32,"impr":727.0,"lc":19.0,"ca":41.0,"lpv":15.0,"reg":2.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-03","n":"CAR 01 + EDGE CUSTOMERS","spend":6.5,"impr":41.0,"lc":0.0,"ca":2.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-03","n":"CAR 02 + TOP DEALS + EXPLORE","spend":50.15,"impr":520.0,"lc":11.0,"ca":16.0,"lpv":11.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-04","n":"CAR 01 + EDGE CUSTOMERS","spend":0.52,"impr":23.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-04","n":"CAR 02 + TOP DEALS + EXPLORE","spend":5.66,"impr":59.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-04","n":"VID 01 + HOW EDGE WORKS","spend":57.73,"impr":406.0,"lc":10.0,"ca":16.0,"lpv":7.0,"reg":1.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-05","n":"CAR 01 + EDGE CUSTOMERS","spend":1.28,"impr":22.0,"lc":0.0,"ca":1.0,"lpv":0.0,"reg":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-05","n":"CAR 02 + TOP DEALS + EXPLORE","spend":13.16,"impr":169.0,"lc":5.0,"ca":5.0,"lpv":4.0,"reg":0.0,"pur":0.0,"val":0.0,"co":2.0},{"d":"2026-10-05","n":"VID 01 + HOW EDGE WORKS","spend":88.57,"impr":681.0,"lc":12.0,"ca":28.0,"lpv":10.0,"reg":1.0,"pur":0.0,"val":0.0,"co":15.0},{"d":"2026-10-06","n":"CAR 01 + EDGE CUSTOMERS","spend":7.06,"impr":28.0,"lc":1.0,"ca":1.0,"lpv":1.0,"reg":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-06","n":"CAR 02 + TOP DEALS + EXPLORE","spend":39.48,"impr":222.0,"lc":3.0,"ca":6.0,"lpv":1.0,"reg":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-06","n":"VID 01 + HOW EDGE WORKS","spend":114.5,"impr":836.0,"lc":18.0,"ca":35.0,"lpv":13.0,"reg":0.0,"pur":0.0,"val":0.0,"co":20.0}]};
+const C = DATA.campaign, A = DATA.ads;
+const days = C.map(r=>r.d);
+const MIN = days[0], MAX = days[days.length-1];
+const LAUNCH = (C.find(r=>r.spend>0)||C[0]).d;
+const $ = id=>document.getElementById(id);
+const K = ['spend','impr','lc','ca','lpv','reg','pur','val','co'];
+const usd = (n,d=2)=> n==null||!isFinite(n) ? '–' : '$'+n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const num = n=> n==null||!isFinite(n) ? '–' : Math.round(n).toLocaleString('en-US');
+const pct = n=> n==null||!isFinite(n) ? '–' : n.toFixed(2)+'%';
+const div = (a,b)=> b>0 ? a/b : null;
+const fd = s=> new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+function sum(rows){const t={};K.forEach(k=>t[k]=0);rows.forEach(r=>K.forEach(k=>t[k]+=r[k]||0));return t}
+function derive(t){return {...t,ctr:div(t.lc*100,t.impr),cpc:div(t.spend,t.lc),cpm:div(t.spend*1000,t.impr),cpr:div(t.spend,t.reg),roas:div(t.val,t.spend),clpv:div(t.spend,t.lpv)}}
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+$('camp').textContent = DATA.name;
+const from=$('from'), to=$('to');
+[from,to].forEach(i=>{i.min=MIN;i.max=MAX});
+from.value=MIN; to.value=MAX;
+let preset='all', chart=null;
+
+function shift(d,n){const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)}
+function setPreset(p){
+  preset=p; to.value=MAX;
+  from.value = p==='all'?MIN : p==='launch'?LAUNCH : (shift(MAX,-(+p-1))<MIN?MIN:shift(MAX,-(+p-1)));
+  render();
+}
+$('presets').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setPreset(b.dataset.p)});
+[from,to].forEach(i=>i.addEventListener('change',()=>{
+  if(!from.value)from.value=MIN; if(!to.value)to.value=MAX;
+  if(from.value<MIN)from.value=MIN; if(to.value>MAX)to.value=MAX;
+  if(from.value>to.value){ if(i===from)to.value=from.value; else from.value=to.value; }
+  preset=null; render();
+}));
+$('metric').addEventListener('change',render);
+
+const METRICS={
+  spend:{l:'Amount spent',f:v=>usd(v),g:r=>r.spend},
+  reg:{l:'Registrations',f:num,g:r=>r.reg},
+  cpr:{l:'Cost per registration',f:v=>usd(v),g:r=>div(r.spend,r.reg),line:1},
+  impr:{l:'Impressions',f:num,g:r=>r.impr},
+  lc:{l:'Link clicks',f:num,g:r=>r.lc},
+  ctr:{l:'Link CTR',f:pct,g:r=>div(r.lc*100,r.impr),line:1},
+  cpc:{l:'Cost per link click',f:v=>usd(v),g:r=>div(r.spend,r.lc),line:1},
+  lpv:{l:'Landing page views',f:num,g:r=>r.lpv},
+  co:{l:'Checkouts initiated',f:num,g:r=>r.co}
+};
+const css = v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+function render(){
+  const a=from.value,b=to.value, inR=r=>r.d>=a&&r.d<=b;
+  document.querySelectorAll('#presets button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.p===preset));
+  const rows=C.filter(inR), t=derive(sum(rows));
+  const n=rows.length;
+  $('rangeText').textContent = (a===b?fd(a):fd(a)+' to '+fd(b))+' 2026 · '+n+(n===1?' day':' days');
+
+  const tiles=[
+    ['Amount spent',usd(t.spend),usd(div(t.spend,n))+' per day',1],
+    ['Registrations',num(t.reg),'Campaign objective',1],
+    ['Cost per registration',usd(t.cpr),t.reg?'Spend ÷ registrations':'No registrations in range',1],
+    ['Checkouts initiated',num(t.co),usd(div(t.spend,t.co))+' each'],
+    ['Impressions',num(t.impr),'CPM '+usd(t.cpm)],
+    ['Link clicks',num(t.lc),'CTR '+pct(t.ctr)+' · CPC '+usd(t.cpc)],
+    ['Landing page views',num(t.lpv),usd(t.clpv)+' each'],
+    ['Purchases',num(t.pur),usd(t.val)+' value · ROAS '+(t.roas==null?'–':t.roas.toFixed(2)+'x')]
+  ];
+  $('kpis').innerHTML=tiles.map(x=>`<div class="kpi${x[3]?' lead':''}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="n">${x[2]}</div></div>`).join('');
+
+  // funnel, each step as a share of link clicks
+  const steps=[['Link clicks',t.lc],['Landing page views',t.lpv],['Checkouts initiated',t.co],['Registrations completed',t.reg],['Purchases',t.pur]];
+  $('funnel').innerHTML = t.lc? steps.map((s,i)=>`<div class="fr"><span class="nm">${s[0]}</span><span class="ct">${num(s[1])}</span><span class="tr"><i style="width:${Math.min(100,s[1]/t.lc*100)}%"></i></span>${i?`<span class="rt">${(s[1]/t.lc*100).toFixed(1)}% of link clicks</span>`:`<span class="rt">From ${num(t.impr)} impressions</span>`}</div>`).join('') : '<div class="empty">No delivery in this date range.</div>';
+
+  // ads
+  const names=[...new Set(A.map(r=>r.n))];
+  const ad=names.map(nm=>({n:nm,...derive(sum(A.filter(r=>r.n===nm&&inR(r))))})).sort((x,y)=>y.spend-x.spend);
+  const at=derive(sum(A.filter(inR)));
+  const cols=[['Spent',r=>usd(r.spend)],['Impr.',r=>num(r.impr)],['Link clicks',r=>num(r.lc)],['CTR',r=>pct(r.ctr)],['CPC',r=>usd(r.cpc)],['LP views',r=>num(r.lpv)],['Checkouts',r=>num(r.co)],['Registrations',r=>num(r.reg)],['Cost / reg.',r=>usd(r.cpr)],['Purchases',r=>num(r.pur)],['Purchase value',r=>usd(r.val)]];
+  $('ads').innerHTML='<thead><tr><th>Ad</th>'+cols.map(c=>`<th>${c[0]}</th>`).join('')+'</tr></thead><tbody>'+
+    ad.map(r=>`<tr><td class="name">${esc(r.n)}<div class="share" title="Share of spend"><i style="width:${at.spend?r.spend/at.spend*100:0}%"></i></div></td>`+cols.map(c=>`<td>${c[1](r)}</td>`).join('')+'</tr>').join('')+
+    '</tbody><tfoot><tr><td>All ads</td>'+cols.map(c=>`<td>${c[1](at)}</td>`).join('')+'</tr></tfoot>';
+
+  // daily table, newest first
+  const dc=[['Spent',r=>usd(r.spend)],['Impr.',r=>num(r.impr)],['Link clicks',r=>num(r.lc)],['CTR',r=>pct(r.ctr)],['CPC',r=>usd(r.cpc)],['LP views',r=>num(r.lpv)],['Checkouts',r=>num(r.co)],['Registrations',r=>num(r.reg)],['Cost / reg.',r=>usd(r.cpr)],['Purchases',r=>num(r.pur)]];
+  $('days').innerHTML='<thead><tr><th>Date</th>'+dc.map(c=>`<th>${c[0]}</th>`).join('')+'</tr></thead><tbody>'+
+    rows.slice().reverse().map(r=>{const x=derive(r);return `<tr><td>${fd(r.d)}</td>`+dc.map(c=>`<td>${c[1](x)}</td>`).join('')+'</tr>'}).join('')+
+    '</tbody><tfoot><tr><td>Total</td>'+dc.map(c=>`<td>${c[1](t)}</td>`).join('')+'</tr></tfoot>';
+
+  drawChart(rows);
+}
+
+function drawChart(rows){
+  if(!window.Chart) return;
+  const m=METRICS[$('metric').value], ink=css('--muted'), line=css('--line'), acc=css('--accent');
+  const cfg={
+    type:m.line?'line':'bar',
+    data:{labels:rows.map(r=>fd(r.d)),datasets:[{label:m.l,data:rows.map(m.g),backgroundColor:acc,borderColor:acc,borderRadius:4,maxBarThickness:46,borderWidth:m.line?2.5:0,pointRadius:4,pointBackgroundColor:acc,spanGaps:false,tension:.25}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>m.l+': '+m.f(c.parsed.y)}}},
+      scales:{x:{grid:{display:false},ticks:{color:ink,font:{family:'Figtree'}},border:{color:line}},
+              y:{beginAtZero:true,grid:{color:line},border:{display:false},ticks:{color:ink,font:{family:'Figtree'},maxTicksLimit:6,callback:v=>m.f(v)}}}}
+  };
+  if(chart) chart.destroy();
+  chart=new Chart($('chart'),cfg);
+}
+render();
+const rr=()=>drawChart(C.filter(r=>r.d>=from.value&&r.d<=to.value));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',rr);
+new MutationObserver(rr).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>
+
+</body></html>
