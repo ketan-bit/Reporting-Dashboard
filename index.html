@@ -1,6 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kingscrowd Meta Ads Report</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
 <style>
+body{margin:0}
 /* Layout: sticky date bar on top, KPI band, trend chart beside funnel, then ad and daily tables. */
 :root{
   --bg:#f3f5f8; --surface:#ffffff; --ink:#15202e; --muted:#5d6b7c; --line:#dde3ea;
@@ -59,18 +65,29 @@ tfoot td{font-weight:600;border-top:2px solid var(--line)}
 .empty{color:var(--muted);padding:24px 0;text-align:center}
 .foot{font-size:12.5px;color:var(--muted);max-width:75ch}
 @media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sel{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);font-weight:600}
+.sel select{min-width:0;max-width:min(360px,80vw)}
+.cname{display:block;font-weight:400;font-size:12.5px;color:var(--muted);margin-top:2px}
+.status{padding:20px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--muted)}
+#adset{max-width:min(420px,100%);min-width:0}
+th.txt,td.txt{text-align:left;white-space:normal;min-width:200px}
+td.txt{font-size:13px;color:var(--muted)}
+td.name{text-align:left}
 </style>
+</head>
+<body>
 <div class="wrap">
   <header class="top">
     <div>
       <div class="eyebrow">Performance dashboard</div>
-      <h1 id="camp"></h1>
-      <div class="sub" id="rangeText"></div>
+      <h1>Kingscrowd Meta Ads Report</h1>
+      <div class="sub" id="rangeText">Loading the latest data…</div>
     </div>
   </header>
 
   <div class="bar">
     <div class="dates">
+      <label class="sel" for="campaign">Campaign<select id="campaign"></select></label>
       <label for="from">From<input type="date" id="from"></label>
       <label for="to">To<input type="date" id="to"></label>
     </div>
@@ -83,6 +100,7 @@ tfoot td{font-weight:600;border-top:2px solid var(--line)}
     </div>
   </div>
 
+  <div id="status" class="status" hidden></div>
   <div class="kpis" id="kpis"></div>
 
   <div class="grid2">
@@ -91,15 +109,15 @@ tfoot td{font-weight:600;border-top:2px solid var(--line)}
         <h2>Daily trend</h2>
         <select id="metric" aria-label="Metric to chart">
           <option value="spend">Amount spent</option>
+          <option value="tr">Trials started</option>
+          <option value="cptr">Cost per trial</option>
           <option value="reg">Complete registrations</option>
-          <option value="cpr">Cost per registration</option>
           <option value="impr">Impressions</option>
           <option value="lc">Link clicks</option>
           <option value="ctr">Link CTR</option>
           <option value="cpc">Cost per link click</option>
+          <option value="cpm">CPM</option>
           <option value="lpv">Landing page views</option>
-          <option value="tr">Trials started</option>
-          <option value="co">Checkouts initiated</option>
           <option value="pur">Purchases</option>
           <option value="val">Purchase value</option>
         </select>
@@ -113,7 +131,12 @@ tfoot td{font-weight:600;border-top:2px solid var(--line)}
   </div>
 
   <section class="panel">
-    <div class="ph"><h2>Ad performance</h2></div>
+    <div class="ph"><h2>Ad set performance</h2></div>
+    <div class="scroll"><table id="adsets"></table></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><h2>Ad performance</h2><select id="adset" aria-label="Filter ads by ad set"></select></div>
     <div class="scroll"><table id="ads"></table></div>
   </section>
 
@@ -122,100 +145,101 @@ tfoot td{font-weight:600;border-top:2px solid var(--line)}
     <div class="scroll"><table id="days"></table></div>
   </section>
 
-  <p class="foot">Source: Meta Ads Manager export, 22 Sep to 15 Oct 2026, in USD. Attribution: 7-day click, 1-day view or 1-day engaged view. Ads started delivering on 30 Sep. Ad-level figures can differ from campaign totals by a few cents because Meta rounds each row.</p>
+  <p class="foot" id="foot">Source: Meta Ads Manager, in USD, using each campaign's attribution setting. Initiated checkouts are not shown because the landing page fires that event on every page view.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>window.__DATA__={"updated":"2026-10-18T23:59:00+00:00","since":"2026-09-29","until":"2026-10-18","rows":[{"d":"2026-09-30","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":101.32,"impr":2194,"lc":27,"lpv":20.0,"reg":0.0,"tr":0.0,"co":2.0,"pur":1.0,"val":150.0},{"d":"2026-09-30","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":32.8,"impr":218,"lc":8,"lpv":7.0,"reg":1.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-09-30","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":171.13,"impr":1216,"lc":32,"lpv":26.0,"reg":4.0,"tr":0.0,"co":6.0,"pur":0.0,"val":0.0},{"d":"2026-10-01","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":13.91,"impr":106,"lc":1,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-01","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":74.16,"impr":1129,"lc":25,"lpv":22.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-01","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":175.39,"impr":1083,"lc":20,"lpv":16.0,"reg":1.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-02","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":11.82,"impr":76,"lc":1,"lpv":1.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-02","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":72.82,"impr":933,"lc":17,"lpv":16.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":1.0,"val":150.0},{"d":"2026-10-02","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":122.37,"impr":764,"lc":16,"lpv":14.0,"reg":1.0,"tr":0.0,"co":3.0,"pur":0.0,"val":0.0},{"d":"2026-10-03","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":6.5,"impr":41,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-03","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":50.15,"impr":520,"lc":11,"lpv":11.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-03","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":120.32,"impr":727,"lc":19,"lpv":15.0,"reg":2.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-04","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":0.52,"impr":23,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-04","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":5.66,"impr":59,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-04","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":57.73,"impr":406,"lc":10,"lpv":7.0,"reg":1.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-05","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":1.28,"impr":22,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-05","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":13.16,"impr":169,"lc":5,"lpv":4.0,"reg":0.0,"tr":0.0,"co":2.0,"pur":0.0,"val":0.0},{"d":"2026-10-05","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":88.57,"impr":681,"lc":12,"lpv":10.0,"reg":1.0,"tr":0.0,"co":15.0,"pur":0.0,"val":0.0},{"d":"2026-10-06","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":7.06,"impr":28,"lc":1,"lpv":1.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-06","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":39.48,"impr":222,"lc":3,"lpv":1.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-06","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":114.5,"impr":836,"lc":18,"lpv":13.0,"reg":0.0,"tr":0.0,"co":20.0,"pur":0.0,"val":0.0},{"d":"2026-10-07","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":10.65,"impr":49,"lc":1,"lpv":1.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-07","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":37.4,"impr":292,"lc":8,"lpv":6.0,"reg":0.0,"tr":0.0,"co":6.0,"pur":0.0,"val":0.0},{"d":"2026-10-07","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":116.23,"impr":842,"lc":8,"lpv":6.0,"reg":0.0,"tr":0.0,"co":11.0,"pur":0.0,"val":0.0},{"d":"2026-10-08","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":3.28,"impr":63,"lc":0,"lpv":0.0,"reg":1.0,"tr":1.0,"co":2.0,"pur":0.0,"val":0.0},{"d":"2026-10-08","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":27.11,"impr":310,"lc":5,"lpv":4.0,"reg":0.0,"tr":0.0,"co":5.0,"pur":0.0,"val":0.0},{"d":"2026-10-08","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":166.42,"impr":1246,"lc":24,"lpv":23.0,"reg":0.0,"tr":0.0,"co":31.0,"pur":0.0,"val":0.0},{"d":"2026-10-09","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":3.03,"impr":43,"lc":2,"lpv":0.0,"reg":0.0,"tr":0.0,"co":6.0,"pur":0.0,"val":0.0},{"d":"2026-10-09","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":29.42,"impr":198,"lc":5,"lpv":4.0,"reg":0.0,"tr":0.0,"co":4.0,"pur":0.0,"val":0.0},{"d":"2026-10-09","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":144.29,"impr":782,"lc":22,"lpv":18.0,"reg":1.0,"tr":1.0,"co":20.0,"pur":0.0,"val":0.0},{"d":"2026-10-10","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":11.06,"impr":48,"lc":1,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-10","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":46.17,"impr":283,"lc":4,"lpv":3.0,"reg":0.0,"tr":0.0,"co":2.0,"pur":0.0,"val":0.0},{"d":"2026-10-10","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":141.7,"impr":818,"lc":16,"lpv":11.0,"reg":0.0,"tr":0.0,"co":15.0,"pur":0.0,"val":0.0},{"d":"2026-10-11","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":1.94,"impr":29,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-11","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":49.03,"impr":305,"lc":6,"lpv":5.0,"reg":0.0,"tr":0.0,"co":9.0,"pur":0.0,"val":0.0},{"d":"2026-10-11","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":166.64,"impr":776,"lc":22,"lpv":20.0,"reg":0.0,"tr":0.0,"co":22.0,"pur":0.0,"val":0.0},{"d":"2026-10-12","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":0.1,"impr":4,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-12","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":34.49,"impr":293,"lc":5,"lpv":4.0,"reg":0.0,"tr":0.0,"co":4.0,"pur":0.0,"val":0.0},{"d":"2026-10-12","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":126.73,"impr":650,"lc":15,"lpv":11.0,"reg":0.0,"tr":0.0,"co":13.0,"pur":0.0,"val":0.0},{"d":"2026-10-13","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":0.04,"impr":3,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-13","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":51.17,"impr":320,"lc":7,"lpv":7.0,"reg":0.0,"tr":0.0,"co":11.0,"pur":0.0,"val":0.0},{"d":"2026-10-13","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":120.03,"impr":803,"lc":12,"lpv":11.0,"reg":0.0,"tr":0.0,"co":14.0,"pur":0.0,"val":0.0},{"d":"2026-10-14","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":0.49,"impr":13,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-14","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":22.37,"impr":238,"lc":1,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-14","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":70.17,"impr":398,"lc":6,"lpv":3.0,"reg":0.0,"tr":0.0,"co":4.0,"pur":0.0,"val":0.0},{"d":"2026-10-15","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":0.1,"impr":4,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-15","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":28.69,"impr":262,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-15","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":61.53,"impr":422,"lc":9,"lpv":3.0,"reg":0.0,"tr":0.0,"co":3.0,"pur":0.0,"val":0.0},{"d":"2026-10-15","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 01 + EDGE CUSTOMERS","spend":11.37,"impr":19,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-15","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 02 + TOP DEALS + EXPLORE","spend":7.34,"impr":20,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-15","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests | Lookalike","n":"VID 01 + HOW EDGE WORKS","spend":8.82,"impr":23,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":0.03,"impr":1,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":15.91,"impr":127,"lc":3,"lpv":5.0,"reg":0.0,"tr":0.0,"co":6.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":42.99,"impr":309,"lc":4,"lpv":1.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 01 + EDGE CUSTOMERS","spend":1.21,"impr":30,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 02 + TOP DEALS + EXPLORE","spend":2.01,"impr":16,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests | Lookalike","n":"VID 01 + HOW EDGE WORKS","spend":19.88,"impr":120,"lc":3,"lpv":2.0,"reg":0.0,"tr":0.0,"co":5.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":8.87,"impr":323,"lc":7,"lpv":6.0,"reg":0.0,"tr":0.0,"co":6.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":19.6,"impr":310,"lc":23,"lpv":15.0,"reg":0.0,"tr":0.0,"co":11.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":1.7,"impr":78,"lc":3,"lpv":3.0,"reg":0.0,"tr":0.0,"co":3.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 01 + EDGE CUSTOMERS","spend":1.72,"impr":38,"lc":1,"lpv":1.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 02 + TOP DEALS + EXPLORE","spend":4.3,"impr":30,"lc":2,"lpv":2.0,"reg":0.0,"tr":0.0,"co":2.0,"pur":0.0,"val":0.0},{"d":"2026-10-16","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests | Lookalike","n":"VID 01 + HOW EDGE WORKS","spend":0.15,"impr":9,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":0.03,"impr":1,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":17.93,"impr":119,"lc":2,"lpv":2.0,"reg":0.0,"tr":0.0,"co":2.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":47.81,"impr":386,"lc":4,"lpv":3.0,"reg":0.0,"tr":0.0,"co":4.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":6.18,"impr":109,"lc":2,"lpv":2.0,"reg":0.0,"tr":0.0,"co":2.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":41.86,"impr":266,"lc":9,"lpv":8.0,"reg":0.0,"tr":0.0,"co":6.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":1.41,"impr":29,"lc":2,"lpv":2.0,"reg":0.0,"tr":0.0,"co":2.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 01 + EDGE CUSTOMERS","spend":0.64,"impr":13,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 02 + TOP DEALS + EXPLORE","spend":7.3,"impr":73,"lc":1,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-17","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests | Lookalike","n":"VID 01 + HOW EDGE WORKS","spend":0.31,"impr":5,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-18","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":34.71,"impr":176,"lc":3,"lpv":4.0,"reg":0.0,"tr":0.0,"co":6.0,"pur":0.0,"val":0.0},{"d":"2026-10-18","c":"SFM | 29 Sept | Complete Reg. | Edge Subscribe","s":"SFM | Complete Reg. | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":84.88,"impr":452,"lc":9,"lpv":7.0,"reg":0.0,"tr":0.0,"co":9.0,"pur":0.0,"val":0.0},{"d":"2026-10-18","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"CAR 01 + EDGE CUSTOMERS","spend":4.04,"impr":44,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-18","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"CAR 02 + TOP DEALS + EXPLORE","spend":42.41,"impr":183,"lc":7,"lpv":4.0,"reg":0.0,"tr":0.0,"co":3.0,"pur":0.0,"val":0.0},{"d":"2026-10-18","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests","n":"VID 01 + HOW EDGE WORKS","spend":4.63,"impr":41,"lc":1,"lpv":0.0,"reg":0.0,"tr":0.0,"co":1.0,"pur":0.0,"val":0.0},{"d":"2026-10-18","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 01 + EDGE CUSTOMERS","spend":0.2,"impr":3,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0},{"d":"2026-10-18","c":"SFM | 16 Oct | Start Trial | Edge Subscribe","s":"SFM | Start Trial | Edge Subscribe | 25+ interests | Lookalike","n":"CAR 02 + TOP DEALS + EXPLORE","spend":5.05,"impr":31,"lc":0,"lpv":0.0,"reg":0.0,"tr":0.0,"co":0.0,"pur":0.0,"val":0.0}]};</script>
 <script>
-const DATA = {"name":"Kingscrowd Meta Ads Report","campaign":[{"d":"2026-09-22","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-23","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-24","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-25","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-26","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-27","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-28","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-29","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-30","spend":305.25,"impr":3628.0,"lc":67.0,"ca":116.0,"lpv":53.0,"reg":5.0,"tr":0.0,"pur":1.0,"val":150.0,"co":8.0},{"d":"2026-10-01","spend":263.46,"impr":2318.0,"lc":46.0,"ca":68.0,"lpv":38.0,"reg":1.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-02","spend":207.01,"impr":1773.0,"lc":34.0,"ca":47.0,"lpv":31.0,"reg":1.0,"tr":0.0,"pur":1.0,"val":150.0,"co":3.0},{"d":"2026-10-03","spend":176.97,"impr":1288.0,"lc":30.0,"ca":59.0,"lpv":26.0,"reg":2.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-04","spend":63.91,"impr":488.0,"lc":10.0,"ca":16.0,"lpv":7.0,"reg":1.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-05","spend":103.01,"impr":872.0,"lc":17.0,"ca":34.0,"lpv":14.0,"reg":1.0,"tr":0.0,"pur":0.0,"val":0.0,"co":18.0},{"d":"2026-10-06","spend":161.04,"impr":1086.0,"lc":22.0,"ca":42.0,"lpv":15.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":22.0},{"d":"2026-10-07","spend":164.28,"impr":1183.0,"lc":17.0,"ca":35.0,"lpv":13.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":18.0},{"d":"2026-10-08","spend":196.81,"impr":1619.0,"lc":29.0,"ca":48.0,"lpv":27.0,"reg":1.0,"tr":1.0,"pur":0.0,"val":0.0,"co":38.0},{"d":"2026-10-09","spend":176.74,"impr":1023.0,"lc":29.0,"ca":48.0,"lpv":22.0,"reg":1.0,"tr":1.0,"pur":0.0,"val":0.0,"co":30.0},{"d":"2026-10-10","spend":198.93,"impr":1149.0,"lc":21.0,"ca":40.0,"lpv":14.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":17.0},{"d":"2026-10-11","spend":217.61,"impr":1110.0,"lc":28.0,"ca":49.0,"lpv":25.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":32.0},{"d":"2026-10-12","spend":161.32,"impr":947.0,"lc":20.0,"ca":29.0,"lpv":15.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":17.0},{"d":"2026-10-13","spend":171.24,"impr":1126.0,"lc":19.0,"ca":30.0,"lpv":18.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":25.0},{"d":"2026-10-14","spend":93.03,"impr":649.0,"lc":7.0,"ca":13.0,"lpv":3.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":4.0},{"d":"2026-10-15","spend":40.39,"impr":314.0,"lc":3.0,"ca":7.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0}],"ads":[{"d":"2026-09-22","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-22","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-22","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-23","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-23","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-23","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-24","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-24","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-24","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-25","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-25","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-25","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-26","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-26","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-26","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-27","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-27","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-27","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-28","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-28","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-28","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-29","n":"CAR 01 + EDGE CUSTOMERS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-29","n":"CAR 02 + TOP DEALS + EXPLORE","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-29","n":"VID 01 + HOW EDGE WORKS","spend":0.0,"impr":0.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-30","n":"CAR 01 + EDGE CUSTOMERS","spend":101.32,"impr":2194.0,"lc":27.0,"ca":37.0,"lpv":20.0,"reg":0.0,"tr":0.0,"pur":1.0,"val":150.0,"co":2.0},{"d":"2026-09-30","n":"CAR 02 + TOP DEALS + EXPLORE","spend":32.8,"impr":218.0,"lc":8.0,"ca":11.0,"lpv":7.0,"reg":1.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-09-30","n":"VID 01 + HOW EDGE WORKS","spend":171.13,"impr":1216.0,"lc":32.0,"ca":68.0,"lpv":26.0,"reg":4.0,"tr":0.0,"pur":0.0,"val":0.0,"co":6.0},{"d":"2026-10-01","n":"CAR 01 + EDGE CUSTOMERS","spend":13.91,"impr":106.0,"lc":1.0,"ca":1.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-01","n":"CAR 02 + TOP DEALS + EXPLORE","spend":74.16,"impr":1129.0,"lc":25.0,"ca":28.0,"lpv":22.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-01","n":"VID 01 + HOW EDGE WORKS","spend":175.39,"impr":1083.0,"lc":20.0,"ca":39.0,"lpv":16.0,"reg":1.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-02","n":"CAR 01 + EDGE CUSTOMERS","spend":11.82,"impr":76.0,"lc":1.0,"ca":2.0,"lpv":1.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-02","n":"CAR 02 + TOP DEALS + EXPLORE","spend":72.82,"impr":933.0,"lc":17.0,"ca":21.0,"lpv":16.0,"reg":0.0,"tr":0.0,"pur":1.0,"val":150.0,"co":0.0},{"d":"2026-10-02","n":"VID 01 + HOW EDGE WORKS","spend":122.37,"impr":764.0,"lc":16.0,"ca":24.0,"lpv":14.0,"reg":1.0,"tr":0.0,"pur":0.0,"val":0.0,"co":3.0},{"d":"2026-10-03","n":"CAR 01 + EDGE CUSTOMERS","spend":6.5,"impr":41.0,"lc":0.0,"ca":2.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-03","n":"CAR 02 + TOP DEALS + EXPLORE","spend":50.15,"impr":520.0,"lc":11.0,"ca":16.0,"lpv":11.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-03","n":"VID 01 + HOW EDGE WORKS","spend":120.32,"impr":727.0,"lc":19.0,"ca":41.0,"lpv":15.0,"reg":2.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-04","n":"CAR 01 + EDGE CUSTOMERS","spend":0.52,"impr":23.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-04","n":"VID 01 + HOW EDGE WORKS","spend":57.73,"impr":406.0,"lc":10.0,"ca":16.0,"lpv":7.0,"reg":1.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-04","n":"CAR 02 + TOP DEALS + EXPLORE","spend":5.66,"impr":59.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-05","n":"CAR 02 + TOP DEALS + EXPLORE","spend":13.16,"impr":169.0,"lc":5.0,"ca":5.0,"lpv":4.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":2.0},{"d":"2026-10-05","n":"VID 01 + HOW EDGE WORKS","spend":88.57,"impr":681.0,"lc":12.0,"ca":28.0,"lpv":10.0,"reg":1.0,"tr":0.0,"pur":0.0,"val":0.0,"co":15.0},{"d":"2026-10-05","n":"CAR 01 + EDGE CUSTOMERS","spend":1.28,"impr":22.0,"lc":0.0,"ca":1.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-06","n":"CAR 01 + EDGE CUSTOMERS","spend":7.06,"impr":28.0,"lc":1.0,"ca":1.0,"lpv":1.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-06","n":"CAR 02 + TOP DEALS + EXPLORE","spend":39.48,"impr":222.0,"lc":3.0,"ca":6.0,"lpv":1.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-06","n":"VID 01 + HOW EDGE WORKS","spend":114.5,"impr":836.0,"lc":18.0,"ca":35.0,"lpv":13.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":20.0},{"d":"2026-10-07","n":"CAR 01 + EDGE CUSTOMERS","spend":10.65,"impr":49.0,"lc":1.0,"ca":1.0,"lpv":1.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-07","n":"VID 01 + HOW EDGE WORKS","spend":116.23,"impr":842.0,"lc":8.0,"ca":25.0,"lpv":6.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":11.0},{"d":"2026-10-07","n":"CAR 02 + TOP DEALS + EXPLORE","spend":37.4,"impr":292.0,"lc":8.0,"ca":9.0,"lpv":6.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":6.0},{"d":"2026-10-08","n":"CAR 01 + EDGE CUSTOMERS","spend":3.28,"impr":63.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":1.0,"tr":1.0,"pur":0.0,"val":0.0,"co":2.0},{"d":"2026-10-08","n":"CAR 02 + TOP DEALS + EXPLORE","spend":27.11,"impr":310.0,"lc":5.0,"ca":9.0,"lpv":4.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":5.0},{"d":"2026-10-08","n":"VID 01 + HOW EDGE WORKS","spend":166.42,"impr":1246.0,"lc":24.0,"ca":39.0,"lpv":23.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":31.0},{"d":"2026-10-09","n":"CAR 01 + EDGE CUSTOMERS","spend":3.03,"impr":43.0,"lc":2.0,"ca":2.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":6.0},{"d":"2026-10-09","n":"CAR 02 + TOP DEALS + EXPLORE","spend":29.42,"impr":198.0,"lc":5.0,"ca":7.0,"lpv":4.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":4.0},{"d":"2026-10-09","n":"VID 01 + HOW EDGE WORKS","spend":144.29,"impr":782.0,"lc":22.0,"ca":39.0,"lpv":18.0,"reg":1.0,"tr":1.0,"pur":0.0,"val":0.0,"co":20.0},{"d":"2026-10-10","n":"VID 01 + HOW EDGE WORKS","spend":141.7,"impr":818.0,"lc":16.0,"ca":30.0,"lpv":11.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":15.0},{"d":"2026-10-10","n":"CAR 02 + TOP DEALS + EXPLORE","spend":46.17,"impr":283.0,"lc":4.0,"ca":7.0,"lpv":3.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":2.0},{"d":"2026-10-10","n":"CAR 01 + EDGE CUSTOMERS","spend":11.06,"impr":48.0,"lc":1.0,"ca":3.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-11","n":"CAR 01 + EDGE CUSTOMERS","spend":1.94,"impr":29.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":1.0},{"d":"2026-10-11","n":"CAR 02 + TOP DEALS + EXPLORE","spend":49.03,"impr":305.0,"lc":6.0,"ca":7.0,"lpv":5.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":9.0},{"d":"2026-10-11","n":"VID 01 + HOW EDGE WORKS","spend":166.64,"impr":776.0,"lc":22.0,"ca":42.0,"lpv":20.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":22.0},{"d":"2026-10-12","n":"CAR 01 + EDGE CUSTOMERS","spend":0.1,"impr":4.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-12","n":"CAR 02 + TOP DEALS + EXPLORE","spend":34.49,"impr":293.0,"lc":5.0,"ca":6.0,"lpv":4.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":4.0},{"d":"2026-10-12","n":"VID 01 + HOW EDGE WORKS","spend":126.73,"impr":650.0,"lc":15.0,"ca":23.0,"lpv":11.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":13.0},{"d":"2026-10-13","n":"CAR 01 + EDGE CUSTOMERS","spend":0.04,"impr":3.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-13","n":"CAR 02 + TOP DEALS + EXPLORE","spend":51.17,"impr":320.0,"lc":7.0,"ca":7.0,"lpv":7.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":11.0},{"d":"2026-10-13","n":"VID 01 + HOW EDGE WORKS","spend":120.03,"impr":803.0,"lc":12.0,"ca":23.0,"lpv":11.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":14.0},{"d":"2026-10-14","n":"CAR 01 + EDGE CUSTOMERS","spend":0.49,"impr":13.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-14","n":"CAR 02 + TOP DEALS + EXPLORE","spend":22.37,"impr":238.0,"lc":1.0,"ca":3.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-14","n":"VID 01 + HOW EDGE WORKS","spend":70.17,"impr":398.0,"lc":6.0,"ca":10.0,"lpv":3.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":4.0},{"d":"2026-10-15","n":"CAR 01 + EDGE CUSTOMERS","spend":0.08,"impr":3.0,"lc":0.0,"ca":0.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-15","n":"CAR 02 + TOP DEALS + EXPLORE","spend":11.26,"impr":121.0,"lc":0.0,"ca":1.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0},{"d":"2026-10-15","n":"VID 01 + HOW EDGE WORKS","spend":29.05,"impr":190.0,"lc":3.0,"ca":6.0,"lpv":0.0,"reg":0.0,"tr":0.0,"pur":0.0,"val":0.0,"co":0.0}]};
-const C = DATA.campaign, A = DATA.ads;
-const days = C.map(r=>r.d);
-const MIN = days[0], MAX = days[days.length-1];
-const LAUNCH = (C.find(r=>r.spend>0)||C[0]).d;
 const $ = id=>document.getElementById(id);
-const K = ['spend','impr','lc','ca','lpv','reg','tr','pur','val','co'];
+const K = ['spend','impr','lc','lpv','reg','tr','co','pur','val'];
 const usd = (n,d=2)=> n==null||!isFinite(n) ? '–' : '$'+n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const num = n=> n==null||!isFinite(n) ? '–' : Math.round(n).toLocaleString('en-US');
 const pct = n=> n==null||!isFinite(n) ? '–' : n.toFixed(2)+'%';
 const div = (a,b)=> b>0 ? a/b : null;
 const fd = s=> new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-function sum(rows){const t={};K.forEach(k=>t[k]=0);rows.forEach(r=>K.forEach(k=>t[k]+=r[k]||0));return t}
-function derive(t){return {...t,ctr:div(t.lc*100,t.impr),cpc:div(t.spend,t.lc),cpm:div(t.spend*1000,t.impr),cpr:div(t.spend,t.reg),roas:div(t.val,t.spend),clpv:div(t.spend,t.lpv),cptr:div(t.spend,t.tr),cpco:div(t.spend,t.co),cpp:div(t.spend,t.pur)}}
 const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-
-$('camp').textContent = DATA.name;
-const from=$('from'), to=$('to');
-[from,to].forEach(i=>{i.min=MIN;i.max=MAX});
-from.value=LAUNCH; to.value=MAX;
-let preset='launch', chart=null;
-
 function shift(d,n){const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)}
-function setPreset(p){
-  preset=p; to.value=MAX;
-  from.value = p==='all'?MIN : p==='launch'?LAUNCH : (shift(MAX,-(+p-1))<MIN?MIN:shift(MAX,-(+p-1)));
-  render();
-}
-$('presets').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setPreset(b.dataset.p)});
-[from,to].forEach(i=>i.addEventListener('change',()=>{
-  if(!from.value)from.value=MIN; if(!to.value)to.value=MAX;
-  if(from.value<MIN)from.value=MIN; if(to.value>MAX)to.value=MAX;
-  if(from.value>to.value){ if(i===from)to.value=from.value; else from.value=to.value; }
-  preset=null; render();
-}));
-$('metric').addEventListener('change',render);
+function zero(){const t={};K.forEach(k=>t[k]=0);return t}
+function sum(rows){const t=zero();rows.forEach(r=>K.forEach(k=>t[k]+=r[k]||0));return t}
+function derive(t){return {...t,ctr:div(t.lc*100,t.impr),cpc:div(t.spend,t.lc),cpm:div(t.spend*1000,t.impr),cpr:div(t.spend,t.reg),cptr:div(t.spend,t.tr),cpp:div(t.spend,t.pur),roas:div(t.val,t.spend),clpv:div(t.spend,t.lpv)}}
+const css = v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+let RAW=null, DAYS=[], MIN, MAX, LAUNCH, preset='launch', chart=null, view=[];
+const from=$('from'), to=$('to'), camp=$('campaign');
 
 const METRICS={
   spend:{l:'Amount spent',f:v=>usd(v),g:r=>r.spend},
-  reg:{l:'Registrations',f:num,g:r=>r.reg},
-  cpr:{l:'Cost per registration',f:v=>usd(v),g:r=>div(r.spend,r.reg),line:1},
+  tr:{l:'Trials started',f:num,g:r=>r.tr},
+  cptr:{l:'Cost per trial',f:v=>usd(v),g:r=>div(r.spend,r.tr),line:1},
+  reg:{l:'Complete registrations',f:num,g:r=>r.reg},
   impr:{l:'Impressions',f:num,g:r=>r.impr},
   lc:{l:'Link clicks',f:num,g:r=>r.lc},
   ctr:{l:'Link CTR',f:pct,g:r=>div(r.lc*100,r.impr),line:1},
   cpc:{l:'Cost per link click',f:v=>usd(v),g:r=>div(r.spend,r.lc),line:1},
+  cpm:{l:'CPM',f:v=>usd(v),g:r=>div(r.spend*1000,r.impr),line:1},
   lpv:{l:'Landing page views',f:num,g:r=>r.lpv},
-  tr:{l:'Trials started',f:num,g:r=>r.tr},
-  co:{l:'Checkouts initiated',f:num,g:r=>r.co},
   pur:{l:'Purchases',f:num,g:r=>r.pur},
   val:{l:'Purchase value',f:v=>usd(v),g:r=>r.val}
 };
-const css = v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+let adView=[];
+function selCamp(){const c=camp.value;return (RAW.campaigns||RAW.rows).filter(r=>!c||r.c===c)}
+function selAds(){const c=camp.value;return RAW.rows.filter(r=>!c||r.c===c)}
+const adsHaveCampaign=()=>RAW.rows.every(r=>r.c);
+function daily(rows){const m={};rows.forEach(r=>{const t=m[r.d]||(m[r.d]=zero());K.forEach(k=>t[k]+=r[k]||0)});return DAYS.map(d=>({d,...(m[d]||zero())}))}
+function fillAdsets(){const sel=$('adset'),cur=sel.value,sp={};adView.forEach(r=>{if(r.s)sp[r.s]=(sp[r.s]||0)+r.spend});const names=Object.keys(sp).filter(s=>sp[s]>0).sort((a,b)=>sp[b]-sp[a]);sel.innerHTML='<option value="">All ad sets</option>'+names.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');sel.value=names.includes(cur)?cur:'';sel.hidden=!names.length}
+function launchOf(rows){const s=rows.filter(r=>r.spend>0).map(r=>r.d).sort();return s[0]||MIN}
+
+function setPreset(p){
+  preset=p; to.value=MAX;
+  if(p==='all') from.value=MIN;
+  else if(p==='launch') from.value=LAUNCH;
+  else { const f=shift(MAX,-(+p-1)); from.value=f<MIN?MIN:f; }
+  render();
+}
 
 function render(){
   const a=from.value,b=to.value, inR=r=>r.d>=a&&r.d<=b;
   document.querySelectorAll('#presets button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.p===preset));
-  const rows=C.filter(inR), t=derive(sum(rows));
-  const n=rows.length;
-  $('rangeText').textContent = (a===b?fd(a):fd(a)+' to '+fd(b))+' 2026 · '+n+(n===1?' day':' days');
+  const all=view.filter(inR), rows=daily(view).filter(inR), t=derive(sum(all)), n=rows.length;
+  const upd=new Date(RAW.updated).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  $('rangeText').textContent=(a===b?fd(a):fd(a)+' to '+fd(b))+' · '+n+(n===1?' day':' days')+' · Data updated '+upd;
 
   const tiles=[
+    ['Trials started',num(t.tr),t.tr?usd(t.cptr)+' per trial':'No trials in range',1],
+    ['Amount spent',usd(t.spend),usd(div(t.spend,n))+' per day',1],
     ['Complete registrations',num(t.reg),usd(t.cpr)+' per registration',1],
-    ['Trials started',num(t.tr),usd(t.cptr)+' per trial',1],
-    ['Checkouts initiated',num(t.co),usd(t.cpco)+' per checkout',1],
     ['Purchases',num(t.pur),usd(t.cpp)+' per purchase',1],
-    ['Purchase value',usd(t.val),t.pur?usd(div(t.val,t.pur))+' average per purchase':'No purchases in range',1],
-    ['Amount spent',usd(t.spend),usd(div(t.spend,n))+' per day'],
+    ['Purchase value',usd(t.val),'ROAS '+(t.roas==null?'–':t.roas.toFixed(2)+'x'),1],
     ['Impressions',num(t.impr),'CPM '+usd(t.cpm)],
-    ['Link clicks',num(t.lc),'CTR '+pct(t.ctr)+' · CPC '+usd(t.cpc)],
+    ['Link clicks',num(t.lc),'CPC '+usd(t.cpc)],
+    ['Link CTR',pct(t.ctr),'Link clicks ÷ impressions'],
     ['Landing page views',num(t.lpv),usd(t.clpv)+' each'],
-    ['Purchase ROAS',t.roas==null?'–':t.roas.toFixed(2)+'x','Purchase value ÷ spend']
+    ['Cost per trial',usd(t.cptr),'Spend ÷ trials started']
   ];
   $('kpis').innerHTML=tiles.map(x=>`<div class="kpi${x[3]?' lead':''}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div><div class="n">${x[2]}</div></div>`).join('');
 
-  // funnel, each step as a share of link clicks
-  const steps=[['Link clicks',t.lc],['Landing page views',t.lpv],['Complete registrations',t.reg],['Trials started',t.tr],['Checkouts initiated',t.co],['Purchases',t.pur]];
+  const steps=[['Link clicks',t.lc],['Landing page views',t.lpv],['Complete registrations',t.reg],['Trials started',t.tr],['Purchases',t.pur]];
   $('funnel').innerHTML = t.lc? steps.map((s,i)=>`<div class="fr"><span class="nm">${s[0]}</span><span class="ct">${num(s[1])}</span><span class="tr"><i style="width:${Math.min(100,s[1]/t.lc*100)}%"></i></span>${i?`<span class="rt">${(s[1]/t.lc*100).toFixed(1)}% of link clicks</span>`:`<span class="rt">From ${num(t.impr)} impressions</span>`}</div>`).join('') : '<div class="empty">No delivery in this date range.</div>';
 
-  // ads
-  const names=[...new Set(A.map(r=>r.n))];
-  const ad=names.map(nm=>({n:nm,...derive(sum(A.filter(r=>r.n===nm&&inR(r))))})).sort((x,y)=>y.spend-x.spend);
-  const at=derive(sum(A.filter(inR)));
-  const cols=[['Spent',r=>usd(r.spend)],['Impr.',r=>num(r.impr)],['Link clicks',r=>num(r.lc)],['CTR',r=>pct(r.ctr)],['CPC',r=>usd(r.cpc)],['LP views',r=>num(r.lpv)],['Registrations',r=>num(r.reg)],['Cost / reg.',r=>usd(r.cpr)],['Trials',r=>num(r.tr)],['Checkouts',r=>num(r.co)],['Purchases',r=>num(r.pur)],['Purchase value',r=>usd(r.val)]];
-  $('ads').innerHTML='<thead><tr><th>Ad</th>'+cols.map(c=>`<th>${c[0]}</th>`).join('')+'</tr></thead><tbody>'+
-    ad.map(r=>`<tr><td class="name">${esc(r.n)}<div class="share" title="Share of spend"><i style="width:${at.spend?r.spend/at.spend*100:0}%"></i></div></td>`+cols.map(c=>`<td>${c[1](r)}</td>`).join('')+'</tr>').join('')+
-    '</tbody><tfoot><tr><td>All ads</td>'+cols.map(c=>`<td>${c[1](at)}</td>`).join('')+'</tr></tfoot>';
+  const adAll=adView.filter(inR), at=derive(sum(adAll));
+  const multi=!camp.value && new Set(adAll.map(r=>r.c).filter(Boolean)).size>1;
+  const sv=$('adset').value, adF=adAll.filter(r=>!sv||r.s===sv), atF=derive(sum(adF));
+  const g={}; adF.forEach(r=>{const k=r.c+'\u0001'+(r.s||'')+'\u0001'+r.n;(g[k]||(g[k]=[])).push(r)});
+  const ad=Object.entries(g).map(([k,rs])=>{const [c,s,n]=k.split('\u0001');return {c,s,n,...derive(sum(rs))}}).filter(r=>r.spend>0||r.impr>0).sort((x,y)=>y.spend-x.spend);
+  const cols=[['Spent',r=>usd(r.spend)],['Impr.',r=>num(r.impr)],['Link clicks',r=>num(r.lc)],['CTR',r=>pct(r.ctr)],['CPC',r=>usd(r.cpc)],['LP views',r=>num(r.lpv)],['Registrations',r=>num(r.reg)],['Trials',r=>num(r.tr)],['Cost / trial',r=>usd(r.cptr)],['Purchases',r=>num(r.pur)],['Purchase value',r=>usd(r.val)]];
+  $('ads').innerHTML = ad.length ? '<thead><tr><th>Ad</th><th class="txt">Campaign</th><th class="txt">Ad set</th>'+cols.map(c=>`<th>${c[0]}</th>`).join('')+'</tr></thead><tbody>'+
+    ad.map(r=>`<tr><td class="name">${esc(r.n)}<div class="share" title="Share of spend"><i style="width:${atF.spend?r.spend/atF.spend*100:0}%"></i></div></td><td class="txt">${esc(r.c||'–')}</td><td class="txt">${esc(r.s||'–')}</td>`+cols.map(c=>`<td>${c[1](r)}</td>`).join('')+'</tr>').join('')+
+    '</tbody><tfoot><tr><td>'+(sv?'All ads in this ad set':'All ads')+'</td><td></td><td></td>'+cols.map(c=>`<td>${c[1](atF)}</td>`).join('')+'</tr></tfoot>' : `<tbody><tr><td class="empty">${camp.value&&!adsHaveCampaign()?'The ad breakdown for a single campaign is not available in this data. Choose All campaigns to see ads.':'No ads delivered in this date range.'}</td></tr></tbody>`;
 
-  // daily table, newest first
-  const dc=[['Spent',r=>usd(r.spend)],['Impr.',r=>num(r.impr)],['Link clicks',r=>num(r.lc)],['CTR',r=>pct(r.ctr)],['CPC',r=>usd(r.cpc)],['LP views',r=>num(r.lpv)],['Registrations',r=>num(r.reg)],['Cost / reg.',r=>usd(r.cpr)],['Trials',r=>num(r.tr)],['Checkouts',r=>num(r.co)],['Purchases',r=>num(r.pur)],['Purchase value',r=>usd(r.val)]];
+  const sg={}; adAll.forEach(r=>{const k=(r.c||'')+'\u0001'+(r.s||'');(sg[k]||(sg[k]=[])).push(r)});
+  const sets=Object.entries(sg).map(([k,rs])=>{const [c,s]=k.split('\u0001');return {c,s,...derive(sum(rs))}}).filter(r=>r.s&&(r.spend>0||r.impr>0)).sort((x,y)=>y.spend-x.spend);
+  $('adsets').innerHTML = sets.length ? '<thead><tr><th>Ad set</th><th class="txt">Campaign</th>'+cols.map(c=>`<th>${c[0]}</th>`).join('')+'</tr></thead><tbody>'+
+    sets.map(r=>`<tr><td class="name">${esc(r.s)}<div class="share" title="Share of spend"><i style="width:${at.spend?r.spend/at.spend*100:0}%"></i></div></td><td class="txt">${esc(r.c||'–')}</td>`+cols.map(c=>`<td>${c[1](r)}</td>`).join('')+'</tr>').join('')+
+    '</tbody><tfoot><tr><td>All ad sets</td><td></td>'+cols.map(c=>`<td>${c[1](at)}</td>`).join('')+'</tr></tfoot>' : '<tbody><tr><td class="empty">No ad set data in this date range.</td></tr></tbody>';
+
+  const dc=[['Spent',r=>usd(r.spend)],['Impr.',r=>num(r.impr)],['Link clicks',r=>num(r.lc)],['CTR',r=>pct(r.ctr)],['CPC',r=>usd(r.cpc)],['LP views',r=>num(r.lpv)],['Registrations',r=>num(r.reg)],['Trials',r=>num(r.tr)],['Cost / trial',r=>usd(r.cptr)],['Purchases',r=>num(r.pur)],['Purchase value',r=>usd(r.val)]];
   $('days').innerHTML='<thead><tr><th>Date</th>'+dc.map(c=>`<th>${c[0]}</th>`).join('')+'</tr></thead><tbody>'+
     rows.slice().reverse().map(r=>{const x=derive(r);return `<tr><td>${fd(r.d)}</td>`+dc.map(c=>`<td>${c[1](x)}</td>`).join('')+'</tr>'}).join('')+
     '</tbody><tfoot><tr><td>Total</td>'+dc.map(c=>`<td>${c[1](t)}</td>`).join('')+'</tr></tfoot>';
@@ -226,19 +250,49 @@ function render(){
 function drawChart(rows){
   if(!window.Chart) return;
   const m=METRICS[$('metric').value], ink=css('--muted'), line=css('--line'), acc=css('--accent');
-  const cfg={
+  if(chart) chart.destroy();
+  chart=new Chart($('chart'),{
     type:m.line?'line':'bar',
     data:{labels:rows.map(r=>fd(r.d)),datasets:[{label:m.l,data:rows.map(m.g),backgroundColor:acc,borderColor:acc,borderRadius:4,maxBarThickness:46,borderWidth:m.line?2.5:0,pointRadius:4,pointBackgroundColor:acc,spanGaps:false,tension:.25}]},
     options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>m.l+': '+m.f(c.parsed.y)}}},
       scales:{x:{grid:{display:false},ticks:{color:ink,font:{family:'Figtree'}},border:{color:line}},
               y:{beginAtZero:true,grid:{color:line},border:{display:false},ticks:{color:ink,font:{family:'Figtree'},maxTicksLimit:6,callback:v=>m.f(v)}}}}
-  };
-  if(chart) chart.destroy();
-  chart=new Chart($('chart'),cfg);
+  });
 }
-render();
-const rr=()=>drawChart(C.filter(r=>r.d>=from.value&&r.d<=to.value));
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',rr);
-new MutationObserver(rr).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+function applyCampaign(){
+  view=selCamp(); adView=selAds(); LAUNCH=launchOf(view); fillAdsets();
+  if(preset) setPreset(preset); else render();
+}
+
+function init(){
+  MIN=RAW.since; MAX=RAW.until;
+  for(let d=MIN; d<=MAX; d=shift(d,1)) DAYS.push(d);
+  const spend={}; (RAW.campaigns||RAW.rows).forEach(r=>spend[r.c]=(spend[r.c]||0)+r.spend);
+  const names=Object.keys(spend).filter(c=>spend[c]>0).sort((x,y)=>spend[y]-spend[x]);
+  camp.innerHTML=(names.length>1?'<option value="">All campaigns</option>':'')+names.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  [from,to].forEach(i=>{i.min=MIN;i.max=MAX});
+  $('presets').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setPreset(b.dataset.p)});
+  [from,to].forEach(i=>i.addEventListener('change',()=>{
+    if(!from.value)from.value=MIN; if(!to.value)to.value=MAX;
+    if(from.value<MIN)from.value=MIN; if(to.value>MAX)to.value=MAX;
+    if(from.value>to.value){ if(i===from)to.value=from.value; else from.value=to.value; }
+    preset=null; render();
+  }));
+  camp.addEventListener('change',applyCampaign);
+  $('metric').addEventListener('change',render);
+  $('adset').addEventListener('change',render);
+  const rr=()=>drawChart(daily(view).filter(r=>r.d>=from.value&&r.d<=to.value));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',rr);
+  new MutationObserver(rr).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  applyCampaign();
+}
+
+(window.__DATA__?Promise.resolve({ok:true,json:()=>window.__DATA__}):fetch('data.json',{cache:'no-store'}))
+  .then(r=>{if(!r.ok) throw new Error('HTTP '+r.status); return r.json()})
+  .then(d=>{RAW=d; init()})
+  .catch(()=>{const s=$('status'); s.hidden=false; s.textContent='The report data could not be loaded. Refresh the page in a minute; if it still fails, the data file is missing from the site.'; $('rangeText').textContent='';});
 </script>
+</body>
+</html>
